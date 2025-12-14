@@ -1,0 +1,14 @@
+services:
+  easyimg:
+    image: chaoszhu/easyimg
+    container_name: easyimg
+    restart: unless-stopped
+    ports:
+      - "8092:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3000

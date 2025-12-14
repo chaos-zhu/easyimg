@@ -1,0 +1,47 @@
+# 依赖目录
+node_modules
+
+# 构建输出
+.output
+.nuxt
+dist
+
+# 开发文件
+.git
+.gitignore
+.vscode
+.idea
+*.md
+README*
+
+# 日志文件
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# 环境变量文件
+.env
+.env.*
+!.env.example
+
+# 测试文件
+test
+tests
+__tests__
+*.test.js
+*.spec.js
+
+# 数据目录（运行时生成）
+db
+uploads
+
+# Docker 相关
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# 其他
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
