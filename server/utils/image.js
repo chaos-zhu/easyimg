@@ -1,14 +1,13 @@
 import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
-import { join } from 'path'
-import { fileURLToPath } from 'url'
-import { dirname, extname } from 'path'
+import { join, extname } from 'path'
 import { existsSync, mkdirSync, unlinkSync } from 'fs'
 import { writeFile } from 'fs/promises'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const uploadsDir = join(__dirname, '../../uploads')
+// 上传目录：生产环境使用 /app/uploads，开发环境使用项目根目录下的 uploads
+const uploadsDir = process.env.NODE_ENV === 'production'
+  ? '/app/uploads'
+  : join(process.cwd(), 'uploads')
 
 // 确保 uploads 目录存在
 if (!existsSync(uploadsDir)) {
@@ -148,6 +147,13 @@ export function isValidFormat(format, allowedFormats) {
  */
 export function getUploadsDir() {
   return uploadsDir
+}
+
+/**
+ * 获取图片文件路径
+ */
+export function getImageFilePath(filename) {
+  return join(uploadsDir, filename)
 }
 
 export default {

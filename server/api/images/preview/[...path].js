@@ -1,10 +1,7 @@
 import { createReadStream, existsSync } from 'fs'
-import { join } from 'path'
 import db from '../../../utils/db.js'
 import { verifyToken, extractToken } from '../../../utils/jwt.js'
-import { getUploadsDir } from '../../../utils/image.js'
-
-const uploadsDir = getUploadsDir()
+import { getImagePath } from '../../../utils/upload.js'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -71,7 +68,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 检查文件是否存在
-    const filePath = join(uploadsDir, image.filename)
+    const filePath = getImagePath(image.filename)
 
     if (!existsSync(filePath)) {
       console.log('[Admin Preview] File does not exist:', filePath)

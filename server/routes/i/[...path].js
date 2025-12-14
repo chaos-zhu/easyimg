@@ -1,10 +1,7 @@
 import { createReadStream, existsSync } from 'fs'
-import { join } from 'path'
 import { createHash } from 'crypto'
 import db from '../../utils/db.js'
-import { getUploadsDir } from '../../utils/image.js'
-
-const uploadsDir = getUploadsDir()
+import { getImagePath } from '../../utils/upload.js'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -62,7 +59,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 检查文件是否存在
-    const filePath = join(uploadsDir, image.filename)
+    const filePath = getImagePath(image.filename)
 
     if (!existsSync(filePath)) {
       console.log('[Image Route] File does not exist')
