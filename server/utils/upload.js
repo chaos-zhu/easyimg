@@ -1,19 +1,21 @@
 import { existsSync, mkdirSync, unlinkSync } from 'fs'
 import { writeFile } from 'fs/promises'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { processImage, getImageMetadata } from './image.js'
 import db from './db.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const uploadsDir = join(__dirname, '../../uploads')
+// 上传目录：生产环境使用 /app/uploads，开发环境使用项目根目录下的 uploads
+const uploadsDir = process.env.NODE_ENV === 'production'
+  ? '/app/uploads'
+  : join(process.cwd(), 'uploads')
 
 // 确保上传目录存在
 if (!existsSync(uploadsDir)) {
   mkdirSync(uploadsDir, { recursive: true })
 }
+
+console.log('[Upload] 上传目录:', uploadsDir)
 
 /**
  * 解析 multipart/form-data 请求

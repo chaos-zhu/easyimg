@@ -1,17 +1,18 @@
 import Datastore from '@seald-io/nedb'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 
-// 获取项目根目录
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const dataDir = join(__dirname, '../../db')
+// 数据目录：生产环境使用 /app/data，开发环境使用项目根目录下的 db
+const dataDir = process.env.NODE_ENV === 'production'
+  ? '/app/data'
+  : join(process.cwd(), 'db')
 
 // 确保 db 目录存在
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir, { recursive: true })
 }
+
+console.log('[Database] 数据目录:', dataDir)
 
 // 创建数据库实例
 const users = new Datastore({
