@@ -45,3 +45,4 @@ docker-compose*.yml
 Thumbs.db
 *.swp
 *.swo
+md-images
