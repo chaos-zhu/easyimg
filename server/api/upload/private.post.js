@@ -4,6 +4,40 @@ import { parseFormData } from '../../utils/upload.js'
 import { v4 as uuidv4 } from 'uuid'
 import { sendUploadNotification } from '../../utils/notification.js'
 
+/**
+ * 解析 base64 字符串，支持带 data URI 前缀和纯 base64
+ * @param {string} base64String - base64 字符串
+ * @returns {{ buffer: Buffer, format: string, originalFilename: string }}
+ */
+function parseBase64Image(base64String) {
+  let base64Data = base64String
+  let format = 'png' // 默认格式
+
+  // 检查是否包含 data URI 前缀
+  const dataUriMatch = base64String.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/)
+  if (dataUriMatch) {
+    format = dataUriMatch[1].toLowerCase()
+    base64Data = dataUriMatch[2]
+    // 处理特殊格式
+    if (format === 'jpeg') format = 'jpg'
+    if (format === 'svg+xml') format = 'svg'
+  }
+
+  // 解码 base64
+  const buffer = Buffer.from(base64Data, 'base64')
+
+  // 验证是否为有效的图片数据
+  if (buffer.length === 0) {
+    throw new Error('无效的 base64 数据')
+  }
+
+  return {
+    buffer,
+    format,
+    originalFilename: `image.${format}`
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const clientIP = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
 
@@ -31,13 +65,42 @@ export default defineEventHandler(async (event) => {
     const configDoc = await db.settings.findOne({ key: 'privateApiConfig' })
     const config = configDoc?.value || {}
 
-    // 解析表单数据
-    const { file } = await parseFormData(event)
+    let file = null
+
+    // 检查 Content-Type 来决定解析方式
+    const contentType = getHeader(event, 'content-type') || ''
+
+    if (contentType.includes('application/json')) {
+      // JSON 格式，支持 base64 上传
+      const body = await readBody(event)
+
+      if (body.base64) {
+        // base64 字符串上传
+        try {
+          const parsed = parseBase64Image(body.base64)
+          file = {
+            buffer: parsed.buffer,
+            originalFilename: body.filename || parsed.originalFilename,
+            mimetype: `image/${parsed.format}`,
+            size: parsed.buffer.length
+          }
+        } catch (e) {
+          throw createError({
+            statusCode: 400,
+            message: 'base64 图片数据无效: ' + e.message
+          })
+        }
+      }
+    } else {
+      // multipart/form-data 格式
+      const formResult = await parseFormData(event)
+      file = formResult.file
+    }
 
     if (!file) {
       throw createError({
         statusCode: 400,
-        message: '请选择要上传的图片'
+        message: '请选择要上传的图片，支持 multipart/form-data 或 JSON 格式的 base64 字符串'
       })
     }
 
